@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counting Algorithm</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <!-- Your Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <ul class="nav navbar-nav navbar-center">
+                <li><a href="{{ url_for('index') }}">Part Recognition</a></li>
+                <li><a href="{{ url_for('counting') }}">Counting</a></li>
+            </ul>
+        </div><!-- /.container-fluid -->
+    </nav>
+
+    <h1>Counting Algorithm</h1>
+    
+    <form action="{{ url_for('upload_counting_image') }}" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+    </form>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    
+    {% if counting_results %}
+        <h2>Counting Results</h2>
+        <div class="table-responsive">
+            <table class="counting-table">
+                <thead>
+                    <tr>
+                        <th>Uploaded Image</th>
+                        <th>Prediction Image</th>
+                        <th>Object Count</th>
+                        <th>Object Classes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><img src="{{ url_for('static', filename='uploads/counting/' ~ counting_results.filename) }}" alt="{{ counting_results.filename }}"></td>
+                        <td><img src="{{ url_for('static', filename='uploads/predicted_counting/' ~ 'pred_' ~ counting_results.filename) }}" alt="Prediction Image"></td>
+                        <td>{{ counting_results.object_count }}</td>
+                        <td>
+                            {% set class_counts = {} %}
+                            {% for class_name in counting_results.object_classes %}
+                                {% if class_name not in class_counts %}
+                                    {% set _ = class_counts.update({class_name: 1}) %}
+                                {% else %}
+                                    {% set _ = class_counts.update({class_name: class_counts[class_name] + 1}) %}
+                                {% endif %}
+                            {% endfor %}
+                            <ul>
+                            {% for class_name, count in class_counts.items() %}
+                                <li>{{ class_name }} ({{ count }})</li>
+                            {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</body>
+</html>
